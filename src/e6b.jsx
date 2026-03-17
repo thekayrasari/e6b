@@ -80,10 +80,11 @@ function calcCrosswind(rwyHdg, windDir, windSpeed) {
   return { headwind: hw, crosswind: xw };
 }
 
-/** Top of descent distance (nm) for 3° */
-function calcTOD(altToLose, gs) {
-  if (gs <= 0 || altToLose <= 0) return null;
-  return altToLose / (300 * (gs / 100));
+/** Top of descent distance (nm) for 3° — geometry only, GS-independent */
+function calcTOD(altToLose) {
+  if (altToLose <= 0) return null;
+  // tan(3°) × 6076.1 ft/nm = 318.5 ft/nm
+  return altToLose / 318.5;
 }
 
 // ─────────────────────────────────────────────
@@ -372,7 +373,7 @@ function WindSide() {
             <OutputBox label="Wind Correction Angle" value={`${result.wca >= 0 ? "+" : ""}${fmt(result.wca)}°`} highlight caution={Math.abs(result.wca) > 20} />
             <OutputBox label="Ground Speed" value={fmt(result.gs, 0)} unit="kt" highlight />
             <OutputBox label="True Heading" value={`${fmt(result.trueHeading, 0)}°`} />
-            <OutputBox label="Headwind Component" value={`${fmt(-xwResult.headwind, 0)}`} unit="kt" />
+            <OutputBox label="Headwind Component" value={`${fmt(xwResult.headwind, 0)}`} unit="kt" />
             <OutputBox label="Crosswind Component" value={`${Math.abs(xwResult.crosswind).toFixed(0)} (${xwResult.crosswind >= 0 ? "R" : "L"})`} unit="kt" />
           </>
         )}
@@ -517,6 +518,9 @@ function CalcTAS() {
         <OutputBox label="Density Altitude" value={fmt(res.densAlt, 0)} unit="ft" caution={res.densAlt > 8000} />
         <OutputBox label="ISA Deviation" value={`${res.isaDev >= 0 ? "+" : ""}${fmt(res.isaDev, 1)}°C`} caution={Math.abs(res.isaDev) > 15} />
         <OutputBox label="ISA Temp at Altitude" value={fmt(isaTemp(+pa), 1)} unit="°C" />
+        <div style={{ fontSize: 10, color: "var(--label)", fontFamily: "var(--mono)", marginTop: 6 }}>
+          Note: CAS treated as EAS (no compressibility correction). Error is negligible below ~200 kt; increases at higher speeds/altitudes.
+        </div>
       </div>
     </div>
   );
@@ -583,17 +587,18 @@ function CalcConvert() {
 
 function CalcTOD() {
   const [altLose, setAltLose] = useState("8000");
-  const [gs, setGs] = useState("160");
-  const tod = calcTOD(+altLose, +gs);
+  const tod = calcTOD(+altLose);
 
   return (
     <div>
       <Field label="Altitude to Lose" unit="ft" value={altLose} onChange={setAltLose} placeholder="8000" />
-      <Field label="Ground Speed" unit="kt" value={gs} onChange={setGs} placeholder="160" />
       <div style={{ marginTop: 8 }}>
         <OutputBox label="TOD Distance (3° descent)" value={fmt(tod, 1)} unit="nm" highlight />
         <div style={{ fontSize: 10, color: "var(--label)", fontFamily: "var(--mono)", marginTop: 6 }}>
-          Formula: Distance = AltLose ÷ (300 × GS/100)
+          Formula: Distance = AltLose ÷ (tan(3°) × 6076 ft/nm) ≈ AltLose ÷ 318.5
+        </div>
+        <div style={{ fontSize: 10, color: "var(--label)", fontFamily: "var(--mono)", marginTop: 4 }}>
+          Note: distance is geometry only — ground speed affects descent time, not distance.
         </div>
       </div>
     </div>
@@ -842,4 +847,4 @@ export default function E6B() {
       </div>
     </>
   );
-}
+} 
