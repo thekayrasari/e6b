@@ -1,33 +1,19 @@
 # E6-B Flight Computer
 
-A browser-based electronic flight bag (EFB) that replicates the core calculations of the E6-B flight computer. Built with React and Vite, it runs entirely client-side with no backend and no external data dependencies.
+A browser-based electronic flight bag (EFB) that replicates the core calculations of the E6-B flight computer. Implemented as a single self-contained `index.html` file — no framework, no build step, no dependencies.
 
 **Live demo:** https://thekayrasari.github.io/e6b/
 
 ---
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Features](#features)
-- [Architecture](#architecture)
-- [Theming](#theming)
-- [Disclaimer](#disclaimer)
-- [License](#license)
-
----
-
 ## Overview
 
-The app is split into two panels, mirroring the two sides of a physical E6-B:
+The app mirrors the two sides of a physical E6-B:
 
 - **Wind Side** — computes wind correction angle, true/magnetic/compass heading, ground speed, and crosswind/headwind components from a vector solution, with a live canvas vector diagram.
 - **Calculator Side** — a tabbed panel covering time/speed/distance, fuel planning, true airspeed, altitude/density altitude, crosswind components, top of descent, and unit conversions.
 
-All computation is pure JavaScript — no physics library, no chart library, no external dependencies beyond React.
+All computation is pure JavaScript with no external libraries.
 
 ---
 
@@ -35,13 +21,11 @@ All computation is pure JavaScript — no physics library, no chart library, no 
 
 | Layer | Technology |
 |---|---|
-| UI framework | React 18 (functional components + hooks) |
-| Build tool | Vite 5 |
-| Vector diagram | HTML Canvas (2D context, drawn via `useEffect`) |
-| Styling | Inline CSS-in-JS + a single injected `<style>` block |
-| Fonts | Google Fonts — Share Tech Mono, Orbitron (loaded via `@import`) |
-| Language | JavaScript (JSX) |
-| Linting | ESLint (flat config) |
+| Language | Vanilla JavaScript (ES6) |
+| UI | Plain HTML + CSS custom properties |
+| Vector diagram | HTML Canvas (2D context) |
+| Fonts | Google Fonts — Spectral, JetBrains Mono, Source Sans 3 |
+| Build | None — open `index.html` directly |
 
 ---
 
@@ -49,53 +33,34 @@ All computation is pure JavaScript — no physics library, no chart library, no 
 
 ```
 e6b/
-├── public/               # Static assets
-├── src/
-│   └── e6b.jsx           # Entire application — calculations, components, styles
-├── index.html            # Vite entry point
-├── vite.config.js        # Vite configuration
-├── eslint.config.js      # ESLint flat config
-├── package.json
-└── package-lock.json
+├── index.html      # Complete application — all logic, UI, styles, and rendering
+└── LICENSE
 ```
 
-All logic and UI lives in a single file, `src/e6b.jsx`, organized into distinct sections:
+Everything lives in a single file, organized into distinct sections:
 
-- **Pure calculation functions** — stateless math, no React
-- **Unit conversion helpers** — lookup table of converter functions
-- **`WindCanvas`** — canvas-based vector diagram component
-- **Shared UI primitives** — `Field`, `OutputBox`, `SectionHeader`
-- **Wind Side panel** — `WindSide`
-- **Calculator sub-panels** — `CalcTSD`, `CalcFuel`, `CalcTAS`, `CalcAlt`, `CalcConvert`, `CalcTOD`, `CalcXwind`
-- **Calculator tabbed container** — `CalcSide`
-- **Root app** — `E6B` (default export)
+- **Pure calculation functions** — stateless math, no DOM dependencies
+- **Unit conversion table** — lookup object of converter functions
+- **`drawWindCanvas()`** — canvas-based vector diagram, redraws on every input change
+- **UI helpers** — `outputBox()` HTML builder, `fmt()` / `fmtTime()` formatters
+- **Panel updaters** — `updateWind()`, `updateTSD()`, `updateFuel()`, etc.
+- **Tab/panel switching** — `setPanel()`, `setCalcTab()`, `setTSDsolve()`
+- **Init block** — runs all updaters on load to populate default outputs
 
 ---
 
-## Getting Started
+## Usage
 
-### Prerequisites
-
-- Node.js ≥ 18
-- npm ≥ 9
-
-### Install & Run
+### Running Locally
 
 ```bash
 git clone https://github.com/thekayrasari/e6b.git
 cd e6b
-npm install
-npm run dev
+open index.html   # macOS
+# or just double-click index.html on Windows/Linux
 ```
 
-Dev server starts at `http://localhost:5173` with HMR enabled.
-
-### Build for Production
-
-```bash
-npm run build   # output → dist/
-npm run preview # serve dist/ locally
-```
+No Node.js, no `npm install`, no web server required. Works fully offline.
 
 ---
 
@@ -112,19 +77,19 @@ npm run preview # serve dist/ locally
 | Compass Heading | `CH = MH ∓ Deviation` |
 | Headwind / Crosswind | Vector projection onto runway axis |
 
-A **wind vector canvas diagram** renders in real time alongside the inputs, drawing the true course, true heading/TAS vector, wind vector, and ground speed resultant with a WCA arc label. The canvas redraws on every input change via `useEffect`.
+A **wind vector canvas diagram** renders in real time alongside the inputs, drawing the true course, true heading/TAS vector, wind vector, and ground speed resultant with a WCA arc label. The canvas redraws on every input event.
 
 ### Calculator Side (tabs)
 
 | Tab | Calculations |
 |---|---|
 | **TSD** | Solves for distance, time, or ground speed given the other two |
-| **FUEL** | Endurance, fuel required, and reserve from flow rate and onboard fuel |
+| **Fuel** | Endurance, fuel required, and reserve from flow rate and onboard fuel |
 | **TAS** | True airspeed, Mach number, density altitude, and ISA deviation from CAS + pressure altitude + OAT |
-| **ALT** | Pressure altitude from QNH, ISA temp, ISA deviation, and density altitude |
-| **XWIND** | Headwind and crosswind components for a given runway heading |
+| **Alt** | Pressure altitude from QNH, ISA temp, ISA deviation, and density altitude |
+| **XWind** | Headwind and crosswind components for a given runway heading |
 | **TOD** | Top of descent distance for a standard 3° descent profile |
-| **UNITS** | 18 aviation unit conversions across distance, weight, volume, temperature, and pressure |
+| **Units** | 18 aviation unit conversions across distance, weight, volume, temperature, and pressure |
 
 ---
 
@@ -132,7 +97,7 @@ A **wind vector canvas diagram** renders in real time alongside the inputs, draw
 
 ### Calculation Layer
 
-All computation functions are pure, stateless, and defined at the top of the file before any React code. They take and return plain numbers (or a result object), making them straightforward to test or extract independently.
+All computation functions are pure and stateless, defined at the top of the script before any DOM code. They take and return plain numbers (or a result object).
 
 Key functions:
 
@@ -143,35 +108,36 @@ calcFuel(flow, onboard, timeMin)               // → { endurance, required }
 calcTAS(cas, pressAltFt, oatC)                 // → { densAlt, isaDev, tas, mach }
 calcPressAlt(indicatedFt, qnh_inHg)
 calcCrosswind(rwyHdg, windDir, windSpeed)       // → { headwind, crosswind }
-calcTOD(altToLose, gs)
+calcTOD(altToLose)
 ```
 
 ISA temperature uses the standard lapse rate of 1.98 °C per 1,000 ft. Density altitude uses the `(1 − 6.8755856×10⁻⁶ · DA)^4.2558797` rho-ratio approximation. Speed of sound is computed from OAT for the Mach number output.
 
 ### State Model
 
-Each sub-panel manages its own local state with `useState`. There is no global state, context, or external store. The root `E6B` component holds only two pieces of state: the active panel (`wind` or `calc`) and the current theme.
+There is no framework state. Each DOM input holds its own value. Updater functions read directly from `input.value`, compute results, and write HTML strings into output `div` containers via `innerHTML`. Panel and tab switching is handled by toggling the `active` CSS class.
 
 ### Canvas Diagram
 
-`WindCanvas` holds a `ref` to a `<canvas>` element and redraws via `useEffect` whenever its props change. It receives the computed `result` object as a prop and uses it directly — no internal calculation. Vectors are scaled relative to the maximum of TAS, GS, and wind speed so all arrows stay within the canvas bounds.
+`drawWindCanvas()` reads six inputs (TC, TAS, wind direction, wind speed, and the pre-computed result object), clears the canvas, and repaints all vectors from scratch on every call. Vectors are scaled relative to the maximum of TAS, GS, and wind speed so all arrows stay within the canvas bounds. CSS custom properties are read via `getComputedStyle` so the diagram respects dark/light theme changes.
 
 ---
 
 ## Theming
 
-The app supports dark and light modes, toggled by the header button. Themes are implemented as a `data-theme` attribute on `<html>`, switching a set of CSS custom properties:
+Dark and light modes are toggled by the header button. Themes are implemented as a `data-theme` attribute on `<html>`, switching a set of CSS custom properties:
 
 ```
 --bg1, --bg2, --bg3   background layers
 --fg                  primary text
 --label               secondary / muted text
---accent              amber highlight (#ffb800 dark / #b87800 light)
---accent2             green secondary (#5fcf80 dark / #2a8a40 light)
---border              panel borders
+--accent              blue highlight
+--accent2             teal secondary
+--border, --border2   panel borders
+--danger              error / caution colour
 ```
 
-All component styles reference these variables inline, so switching themes requires no component re-render beyond the `useEffect` that sets the attribute.
+All styles reference these variables, so switching themes requires no layout recalculation — only a canvas redraw is triggered.
 
 ---
 
