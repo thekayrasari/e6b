@@ -23,19 +23,7 @@
       --sans:  'Source Sans 3', system-ui, sans-serif;
       --mono:  'JetBrains Mono', 'Courier New', monospace;
     }
-    [data-theme="light"] {
-      --bg1:    #f4f4ef;
-      --bg2:    #eaeae4;
-      --bg3:    #e0e0da;
-      --fg:     #1c1e28;
-      --label:  #6a7088;
-      --muted:  #9aa0b8;
-      --accent:  #3a6ea8;
-      --accent2: #2a8888;
-      --border:  #d0d0c8;
-      --border2: #c0c0b8;
-      --danger:  #a03030;
-    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg1); color: var(--fg); font-family: var(--sans); min-height: 100vh; }
 
@@ -66,7 +54,6 @@
     .header-title { display: flex; flex-direction: column; gap: 1px; }
     .header-title .name { font-family: var(--serif); font-size: 16px; font-weight: 500; color: var(--fg); letter-spacing: 0.01em; }
     .header-title .name em { font-style: italic; font-weight: 300; color: var(--accent); }
-    .header-title .sub  { font-family: var(--mono); font-size: 10px; font-weight: 300; color: var(--label); letter-spacing: 0.06em; }
     .header-controls { display: flex; gap: 8px; align-items: center; }
 
     .panel-toggle { display: flex; border: 1px solid var(--border2); border-radius: 2px; overflow: hidden; }
@@ -78,20 +65,6 @@
     }
     .panel-toggle button:last-child { border-right: none; }
     .panel-toggle button.active { background: var(--accent); color: var(--bg1); }
-
-    .theme-btn {
-      background: var(--bg3); border: 1px solid var(--border2);
-      color: var(--label); font-family: var(--sans); font-size: 11px; font-weight: 500;
-      padding: 5px 11px; border-radius: 2px;
-    }
-
-    .disclaimer {
-      background: var(--bg2); border-bottom: 1px solid var(--border);
-      padding: 3px 24px; display: flex; gap: 28px;
-      font-size: 10px; font-family: var(--mono); font-weight: 300;
-      color: var(--muted); letter-spacing: 0.05em;
-    }
-    .disclaimer .online { color: #4a9e72; }
 
     main { flex: 1; padding: 22px 24px; max-width: 1120px; margin: 0 auto; width: 100%; }
 
@@ -211,22 +184,14 @@
   <header>
     <div class="header-title">
       <span class="name">E6-B <em>Flight Computer</em></span>
-      <span class="sub">Electronic Flight Bag · Client-side · Training Use Only</span>
     </div>
     <div class="header-controls">
       <div class="panel-toggle">
         <button id="btn-wind" class="active" onclick="setPanel('wind')">Wind Side</button>
         <button id="btn-calc" onclick="setPanel('calc')">Calculator</button>
       </div>
-      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">Day Mode</button>
     </div>
   </header>
-
-  <div class="disclaimer">
-    <span class="online">&#9679; Offline</span>
-    <span>v2.0</span>
-    <span>For training use only — verify all outputs with official charts and certified avionics</span>
-  </div>
 
   <main>
     <!-- WIND SIDE -->
@@ -339,7 +304,6 @@
     </div>
   </main>
 
-  <footer>Not for navigational use &middot; All calculations must be verified with official charts and certified avionics</footer>
 </div>
 
 <script>
@@ -410,14 +374,6 @@
     return '<div class="' + cls + '"><span class="ob-label">' + label + '</span><span class="ob-value">' + value + unitHTML + "</span></div>";
   }
 
-  // ── Theme ───────────────────────────────────────────
-  var theme = "dark";
-  function toggleTheme() {
-    theme = theme === "dark" ? "light" : "dark";
-    document.documentElement.setAttribute("data-theme", theme);
-    document.getElementById("theme-btn").textContent = theme === "dark" ? "Day Mode" : "Night Mode";
-    updateWind();
-  }
 
   // ── Panel switching ─────────────────────────────────
   function setPanel(p) {
