@@ -54,6 +54,7 @@
     .header-title { display: flex; flex-direction: column; gap: 1px; }
     .header-title .name { font-family: var(--serif); font-size: 16px; font-weight: 500; color: var(--fg); letter-spacing: 0.01em; }
     .header-title .name em { font-style: italic; font-weight: 300; color: var(--accent); }
+    .header-title .simulation-notice { font-family: var(--mono); font-size: 9px; font-weight: 600; color: var(--danger); letter-spacing: 0.1em; text-transform: uppercase; }
     .header-controls { display: flex; gap: 8px; align-items: center; }
 
     .panel-toggle { display: flex; border: 1px solid var(--border2); border-radius: 2px; overflow: hidden; }
@@ -184,6 +185,7 @@
   <header>
     <div class="header-title">
       <span class="name">E6-B <em>Flight Computer</em></span>
+      <span class="simulation-notice">SIMULATION ONLY</span>
     </div>
     <div class="header-controls">
       <div class="panel-toggle">
