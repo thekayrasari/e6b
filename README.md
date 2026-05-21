@@ -34,7 +34,7 @@ From the project directory:
 ```bash
 npm install
 npm start
-```
+``` 
 
 Then open:
 
