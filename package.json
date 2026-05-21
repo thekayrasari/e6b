@@ -1,0 +1,28 @@
+{
+  "name": "e6b-flight-computer",
+  "version": "1.0.0",
+  "description": "Interactive functional E6-B Flight Computer with Matter.js vector physics simulation",
+  "homepage": "https://thekayrasari.github.io/e6b",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node test.js",
+    "build": "node build.js",
+    "predeploy": "npm run build",
+    "deploy": "npx gh-pages -d docs --branch gh-pages"
+  },
+  "keywords": [
+    "e6b",
+    "flight-computer",
+    "aviation",
+    "matter-js",
+    "physics-simulation",
+    "navigation"
+  ],
+  "author": "Antigravity Pair Programmer",
+  "license": "MIT",
+  "devDependencies": {
+    "gh-pages": "^5.0.0"
+  }
+}

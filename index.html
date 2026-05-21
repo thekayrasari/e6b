@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E6B Flight Computer & Vector Simulator</title>
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <header>
+      <span class="main-title">E6-B</span>
+      <div class="subtitle">Interactive Vector Flight Computer</div>
+    </header>
+
+    <main class="split-layout">
+      <!-- PANEL A: DIGITAL CALCULATORS -->
+      <section class="panel-card" aria-label="Flight Calculators">
+        <!-- Tab Navigation -->
+        <nav class="tab-bar" aria-label="Calculator Modes">
+          <button class="tab-btn active" onclick="switchTab('wind-triangle')" id="tab-wind-triangle">
+            <i class="fa-solid fa-wind"></i> Wind Triangle
+          </button>
+          <button class="tab-btn" onclick="switchTab('atmospherics')" id="tab-atmospherics">
+            <i class="fa-solid fa-cloud-sun"></i> Atmospherics & TAS
+          </button>
+          <button class="tab-btn" onclick="switchTab('fuel-time')" id="tab-fuel-time">
+            <i class="fa-solid fa-gas-pump"></i> Fuel & ETE
+          </button>
+        </nav>
+
+        <!-- TAB 1: WIND TRIANGLE -->
+        <div id="content-wind-triangle" class="tab-content active">
+          <h2 class="form-section-title">Navigation & Wind Inputs</h2>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="input-course">Desired Course (Track)</label>
+              <div class="input-container">
+                <input type="number" id="input-course" min="0" max="360" value="360">
+                <span class="unit-label">deg</span>
+              </div>
+              <div class="slider-container">
+                <input type="range" id="slider-course" min="0" max="360" value="360" step="1">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="input-tas">True Airspeed (TAS)</label>
+              <div class="input-container">
+                <input type="number" id="input-tas" min="40" max="450" value="132">
+                <span class="unit-label">kts</span>
+              </div>
+              <div class="slider-container">
+                <input type="range" id="slider-tas" min="40" max="450" value="132" step="1">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="input-wind-dir">Wind Direction (From)</label>
+              <div class="input-container">
+                <input type="number" id="input-wind-dir" min="0" max="360" value="90">
+                <span class="unit-label">deg</span>
+              </div>
+              <div class="slider-container">
+                <input type="range" id="slider-wind-dir" min="0" max="360" value="90" step="1">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="input-wind-speed">Wind Speed</label>
+              <div class="input-container">
+                <input type="number" id="input-wind-speed" min="0" max="100" value="20">
+                <span class="unit-label">kts</span>
+              </div>
+              <div class="slider-container">
+                <input type="range" id="slider-wind-speed" min="0" max="100" value="20" step="1">
+              </div>
+            </div>
+          </div>
+
+          <h3 class="outputs-title">Calculated Navigation Outputs</h3>
+          <div class="outputs-grid">
+            <div class="output-card highlight" id="card-gs">
+              <span class="output-label">Ground Speed (GS)</span>
+              <span class="output-value highlight" id="output-gs">-- kts</span>
+            </div>
+            <div class="output-card highlight" id="card-th">
+              <span class="output-label">Heading to Fly (TH)</span>
+              <span class="output-value" id="output-th">--°</span>
+            </div>
+            <div class="output-card" id="card-wca">
+              <span class="output-label">Wind Correction Angle</span>
+              <span class="output-value" id="output-wca">--°</span>
+            </div>
+            <div class="output-card" id="card-wind-comp">
+              <span class="output-label">Headwind / Crosswind</span>
+              <span class="output-value" id="output-wind-comp">-- / -- kts</span>
+            </div>
+          </div>
+
+          <div id="wind-warning-banner" class="banner-alert error" style="display: none;">
+            <span class="banner-title"><i class="fa-solid fa-triangle-exclamation"></i> Warning: Insufficient Airspeed</span>
+            <span class="banner-desc">Wind speed exceeds the aircraft's True Airspeed. It is impossible to maintain the desired course vector!</span>
+          </div>
+        </div>
+
+        <!-- TAB 2: ATMOSPHERICS & TAS -->
+        <div id="content-atmospherics" class="tab-content">
+          <h2 class="form-section-title">Atmospheric & Airspeed Inputs</h2>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="input-pressure-alt">Pressure Altitude</label>
+              <div class="input-container">
+                <input type="number" id="input-pressure-alt" min="0" max="45000" value="5000">
+                <span class="unit-label">ft</span>
+              </div>
+              <div class="slider-container">
+                <input type="range" id="slider-pressure-alt" min="0" max="45000" value="5000" step="100">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="input-oat">Outside Air Temp (OAT)</label>
+              <div class="input-container">
+                <input type="number" id="input-oat" min="-40" max="50" value="15">
+                <span class="unit-label">°C</span>
+              </div>
+              <div class="slider-container">
+                <input type="range" id="slider-oat" min="-40" max="50" value="15" step="1">
+              </div>
+            </div>
+
+            <div class="form-group-full">
+              <label for="input-ias">Indicated Airspeed (IAS)</label>
+              <div class="input-container">
+                <input type="number" id="input-ias" min="40" max="350" value="120">
+                <span class="unit-label">kts</span>
+              </div>
+              <div class="slider-container">
+                <input type="range" id="slider-ias" min="40" max="350" value="120" step="1">
+              </div>
+            </div>
+          </div>
+
+          <h3 class="outputs-title">Calculated Aerodynamic Outputs</h3>
+          <div class="outputs-grid">
+            <div class="output-card highlight" id="card-calc-tas">
+              <span class="output-label">Calculated TAS</span>
+              <span class="output-value highlight" id="output-calc-tas">-- kts</span>
+            </div>
+            <div class="output-card" id="card-density-alt">
+              <span class="output-label">Density Altitude</span>
+              <span class="output-value" id="output-density-alt">-- ft</span>
+            </div>
+          </div>
+
+          <div class="banner-alert">
+            <span class="banner-title"><i class="fa-solid fa-circle-info"></i> Aerodynamic Sync Active</span>
+            <span class="banner-desc">Calculated True Airspeed (TAS) is linked directly to your Wind Triangle calculations in the next panel. Adjusting IAS, PA, or OAT updates your active flight speed vector in real-time.</span>
+          </div>
+        </div>
+
+        <!-- TAB 3: FUEL & ETE -->
+        <div id="content-fuel-time" class="tab-content">
+          <h2 class="form-section-title">Fuel & Route Performance</h2>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="input-distance">Leg Distance</label>
+              <div class="input-container">
+                <input type="number" id="input-distance" min="10" max="500" value="240">
+                <span class="unit-label">nm</span>
+              </div>
+              <div class="slider-container">
+                <input type="range" id="slider-distance" min="10" max="500" value="240" step="5">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="input-fuel-flow">Fuel Flow Rate</label>
+              <div class="input-container">
+                <input type="number" id="input-fuel-flow" min="2" max="30" value="8.5" step="0.1">
+                <span class="unit-label">gph</span>
+              </div>
+              <div class="slider-container">
+                <input type="range" id="slider-fuel-flow" min="2" max="30" value="8.5" step="0.5">
+              </div>
+            </div>
+          </div>
+
+          <h3 class="outputs-title">Route Telemetry</h3>
+          <div class="outputs-grid">
+            <div class="output-card highlight" id="card-ete">
+              <span class="output-label">Estimated Time Enroute (ETE)</span>
+              <span class="output-value highlight" id="output-ete">--h --m --s</span>
+            </div>
+            <div class="output-card highlight" id="card-fuel-burn">
+              <span class="output-label">Total Fuel Required</span>
+              <span class="output-value highlight" id="output-fuel-burn">-- gal</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACCORDION: CONVERSIONS -->
+        <div class="accordion">
+          <div class="accordion-header" onclick="toggleAccordion()" id="conv-accordion-header">
+            <span><i class="fa-solid fa-right-left"></i> Quick Conversions</span>
+            <i class="fa-solid fa-chevron-down" id="accordion-arrow"></i>
+          </div>
+          <div class="accordion-content" id="conv-accordion-content">
+            <div class="conv-grid">
+              <div>
+                <div class="conv-row">
+                  <span class="conv-label" style="width: 50px;">Speed:</span>
+                  <input type="number" id="conv-kts" value="100" oninput="convertSpeed('kts')"> <span class="conv-label">KTS</span>
+                  <span class="conv-arrow"><i class="fa-solid fa-arrows-left-right"></i></span>
+                  <input type="number" id="conv-mph" value="115.1" oninput="convertSpeed('mph')"> <span class="conv-label">MPH</span>
+                </div>
+                <div class="conv-row">
+                  <span class="conv-label" style="width: 50px;"></span>
+                  <input type="number" id="conv-kmh" value="185.2" oninput="convertSpeed('kmh')"> <span class="conv-label">KM/H</span>
+                </div>
+              </div>
+              <div>
+                <div class="conv-row">
+                  <span class="conv-label" style="width: 80px;">Altitude:</span>
+                  <input type="number" id="conv-ft" value="1000" oninput="convertAlt('ft')"> <span class="conv-label">FT</span>
+                  <span class="conv-arrow"><i class="fa-solid fa-arrows-left-right"></i></span>
+                  <input type="number" id="conv-m" value="304.8" oninput="convertAlt('m')"> <span class="conv-label">M</span>
+                </div>
+                <div class="conv-row">
+                  <span class="conv-label" style="width: 80px;">Temperature:</span>
+                  <input type="number" id="conv-c" value="15" oninput="convertTemp('c')"> <span class="conv-label">°C</span>
+                  <span class="conv-arrow"><i class="fa-solid fa-arrows-left-right"></i></span>
+                  <input type="number" id="conv-f" value="59" oninput="convertTemp('f')"> <span class="conv-label">°F</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PANEL B: WHIZ-WHEEL & VECTOR VISUALIZER -->
+      <section class="visualizer-container" aria-label="Visual Navigation Display">
+        <div class="canvas-card">
+          <!-- Heading marker index (top of bezel) -->
+          <div class="heading-index-marker">
+            TRUE INDEX: <span id="true-index-val">360°</span>
+          </div>
+
+          <!-- Compass Rose (Whiz-Wheel Container) -->
+          <div class="whiz-wheel-box" id="whizWheelBox">
+            <canvas id="simulationCanvas"></canvas>
+            
+            <div class="whiz-wheel-overlay">
+              <!-- Overlay graphics done via Canvas drawing to enable high efficiency rotating dials -->
+            </div>
+            
+            <!-- Floating Navigation HUD -->
+            <div class="hud-telemetry">
+              <div class="hud-item">
+                <span class="hud-label">TRK (Course)</span>
+                <span class="hud-val" id="hud-trk">360°</span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">HDG (TH)</span>
+                <span class="hud-val" id="hud-hdg">010°</span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">WIND</span>
+                <span class="hud-val" id="hud-wind">090° @ 20K</span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">GS</span>
+                <span class="hud-val" id="hud-gs">118 KTS</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Simulation Controls -->
+          <div class="control-bar">
+            <button class="btn primary" id="btn-toggle-sim" onclick="toggleSim()">
+              <i class="fa-solid fa-pause"></i> Pause Sim
+            </button>
+            <button class="btn" onclick="resetAircraft()">
+              <i class="fa-solid fa-rotate-left"></i> Reset Plane
+            </button>
+            <button class="btn" id="btn-toggle-bezel-sync" onclick="toggleBezelSync()">
+              <i class="fa-solid fa-link"></i> Bezel Sync: Course
+            </button>
+            <button class="btn" id="btn-toggle-particles" onclick="toggleParticles()">
+              <i class="fa-solid fa-wind"></i> Wind Lines: ON
+            </button>
+          </div>
+        </div>
+
+        <!-- Architectural Legend / Explainer -->
+        <div class="panel-card" style="padding: 16px var(--card-padding);">
+          <h4 style="font-family: var(--font-sans); font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-primary); letter-spacing: 1px; margin-bottom: 8px;">
+            <i class="fa-solid fa-compass-drafting"></i> VECTOR DIAGRAM GUIDE
+          </h4>
+          <p style="font-family: var(--font-sans); font-size: 13px; line-height: 18px; color: var(--text-default);">
+            The physical canvas models the real-world aerodynamics of flight:
+            <br>
+            <span style="display: inline-block; width: 10px; height: 10px; background-color: #536b78; margin-right: 4px;"></span> 
+            <strong>True Heading ($TH$):</strong> The direction the aircraft points (thrust force vector).
+            <br>
+            <span style="display: inline-block; width: 10px; height: 10px; border: 2px dashed #536b78; margin-right: 4px;"></span> 
+            <strong>Wind Vector:</strong> Environmental force blowing the plane off-course (orange flowlines).
+            <br>
+            <span style="display: inline-block; width: 10px; height: 10px; background-color: #2e7d32; margin-right: 4px;"></span> 
+            <strong>Ground Track (Course):</strong> The actual path traveled over the ground ($GS$ vector).
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer-info">
+      E6-B Vector Simulation Engine &bull; System Time: 2026 &bull; Aeronautical Design
+    </footer>
+  </div>
+
+  <!-- CDN scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+  <!-- Application scripts -->
+  <script src="calculator.js"></script>
+  <script src="visualizer.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
